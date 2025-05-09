@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:life_points/settings.dart';
 
 void main() {
   runApp(const MyApp());
@@ -11,27 +12,52 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Life Points',
       theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // TRY THIS: Try running your application with "flutter run". You'll see
-        // the application has a purple toolbar. Then, without quitting the app,
-        // try changing the seedColor in the colorScheme below to Colors.green
-        // and then invoke "hot reload" (save your changes or press the "hot
-        // reload" button in a Flutter-supported IDE, or press "r" if you used
-        // the command line to start the app).
-        //
-        // Notice that the counter didn't reset back to zero; the application
-        // state is not lost during the reload. To reset the state, use hot
-        // restart instead.
-        //
-        // This works for code too, not just values: Most code changes can be
-        // tested with just a hot reload.
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.grey.shade900),
+        appBarTheme: const AppBarTheme(
+          iconTheme: IconThemeData(
+            color: Colors.white,
+          ), // Set the back button color globally
+        ),
       ),
-      home: const Text('Hello, World!'),
       debugShowCheckedModeBanner: false,
+      home: Builder(
+        builder:
+            (context) => Scaffold(
+              backgroundColor: Colors.grey[800],
+              appBar: AppBar(
+                title: Center(
+                  child: const Text(
+                    'LIFE POINTS',
+                    style: TextStyle(color: Colors.white),
+                  ),
+                ),
+                backgroundColor: Colors.grey[900],
+                bottom: PreferredSize(
+                  preferredSize: const Size.fromHeight(1),
+                  child: Container(color: Colors.black, height: 1.5),
+                ),
+                leading: IconButton(
+                  icon: const Icon(Icons.menu, color: Colors.white),
+                  onPressed: () {
+                    // TODO(foglomon): Write code for the hamburger menu
+                  },
+                ),
+                actions: [
+                  IconButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => Settings()),
+                      );
+                    },
+                    icon: Icon(Icons.settings),
+                    color: Colors.white,
+                  ),
+                ],
+              ),
+              body: Container(color: Colors.grey[900]),
+            ),
+      ),
     );
   }
 }
