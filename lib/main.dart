@@ -18,6 +18,7 @@ class MyApp extends StatelessWidget {
             color: Colors.white,
           ), // Set the back button color globally
         ),
+        textTheme: const TextTheme(bodyMedium: TextStyle(color: Colors.white)),
       ),
       debugShowCheckedModeBanner: false,
       home: Builder(
@@ -39,9 +40,12 @@ class MyApp extends StatelessWidget {
                   child: Container(color: Colors.black, height: 1.5),
                 ),
                 actions: [
-                  IconButton(onPressed: () {
-                    // TODO(foglomon): User profile sign up and log in page
-                  }, icon: Icon(Icons.account_circle_outlined), color: Colors.white),
+                  IconButton(
+                    onPressed: () {
+                      // TODO: User profile sign up and log in page
+                    },
+                    icon: Icon(Icons.account_circle_outlined),
+                  ),
                   IconButton(
                     onPressed: () {
                       Navigator.push(
@@ -54,7 +58,48 @@ class MyApp extends StatelessWidget {
                   ),
                 ],
               ),
-              body: Container(color: Colors.grey[900]),
+              body: Container(
+                height: double.maxFinite,
+                width: double.maxFinite,
+                padding: const EdgeInsets.all(16.5),
+                color: Colors.grey[900],
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      "Hello, <user>",
+                      style: TextStyle(fontSize: 48),
+                    ), //TODO: get username
+                    Container(
+                      margin: EdgeInsets.only(top: 10),
+                      child: Text(
+                        "You have <points> points available",
+                        style: TextStyle(fontSize: 21),
+                      ),
+                    ), //TODO: get points
+                    Container(
+                      margin: EdgeInsets.only(top: 200),
+                      child: Column(
+                        children: [
+                          Text(
+                            "Available Tasks:",
+                            style: TextStyle(fontSize: 24),
+                          ),
+                          SizedBox(
+                            width: double.maxFinite,
+                            height: 150,
+                            child: Card(
+                              elevation: 10,
+                              color: const Color.fromARGB(255, 24, 24, 24),
+                              child: Text("<Task name>"),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ),
       ),
     );
