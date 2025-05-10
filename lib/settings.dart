@@ -17,13 +17,39 @@ class Settings extends StatelessWidget {
               backgroundColor: Colors.grey[900],
               bottom: PreferredSize(
                 preferredSize: const Size.fromHeight(1),
-                child: Container(
-                  color: Colors.black,
-                  height: 1.5,
-                ),
+                child: Container(color: Colors.black, height: 1.5),
               ),
             ),
-            body: Container(color: Colors.grey[900]),
+            body: Container(
+              color: Colors.grey[900],
+              height: double.maxFinite,
+              width: double.maxFinite,
+              padding: const EdgeInsets.all(16.5),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Center(
+                    child: Text(
+                      "Settings",
+                      style: TextStyle(fontSize: 48, color: Colors.white),
+                    ),
+                  ),
+                  SizedBox(
+                    width: double.maxFinite,
+                    height: 100,
+                    child: Card(elevation: 5, color: const Color.fromARGB(255, 24, 24, 24),child: Row(
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.all(10.0),
+                          child: Icon(Icons.account_circle_outlined, color: Colors.white, size: 60,),
+                        ),
+                        Text('Login or Sign Up To Continue', style: TextStyle(color: Colors.white, fontSize: 20),),
+                      ],
+                    )),
+                  ),
+                ],
+              ),
+            ),
           ),
     );
   }
