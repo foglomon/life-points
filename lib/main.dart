@@ -25,10 +25,12 @@ class MyApp extends StatelessWidget {
             (context) => Scaffold(
               backgroundColor: Colors.grey[800],
               appBar: AppBar(
-                title: Center(
-                  child: const Text(
-                    'LIFE POINTS',
-                    style: TextStyle(color: Colors.white),
+                title: const Text(
+                  'LIFE POINTS',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w800,
+                    fontStyle: FontStyle.italic,
                   ),
                 ),
                 backgroundColor: Colors.grey[900],
@@ -36,13 +38,10 @@ class MyApp extends StatelessWidget {
                   preferredSize: const Size.fromHeight(1),
                   child: Container(color: Colors.black, height: 1.5),
                 ),
-                leading: IconButton(
-                  icon: const Icon(Icons.menu, color: Colors.white),
-                  onPressed: () {
-                    // TODO(foglomon): Write code for the hamburger menu
-                  },
-                ),
                 actions: [
+                  IconButton(onPressed: () {
+                    // TODO(foglomon): User profile sign up and log in page
+                  }, icon: Icon(Icons.account_circle_outlined), color: Colors.white),
                   IconButton(
                     onPressed: () {
                       Navigator.push(
