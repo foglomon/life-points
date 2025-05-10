@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:life_points/login.dart';
 
 class Settings extends StatelessWidget {
   const Settings({super.key});
@@ -37,15 +38,20 @@ class Settings extends StatelessWidget {
                   SizedBox(
                     width: double.maxFinite,
                     height: 100,
-                    child: Card(elevation: 5, color: const Color.fromARGB(255, 24, 24, 24),child: Row(
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.all(10.0),
-                          child: Icon(Icons.account_circle_outlined, color: Colors.white, size: 60,),
-                        ),
-                        Text('Login or Sign Up To Continue', style: TextStyle(color: Colors.white, fontSize: 20),),
-                      ],
-                    )),
+                    child: InkWell(
+                      onTap: () {
+                        Navigator.push(context, MaterialPageRoute(builder: (context) => Login()));
+                      },
+                      child: Card(elevation: 5, color: const Color.fromARGB(255, 24, 24, 24),child: Row(
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.all(10.0),
+                            child: Icon(Icons.account_circle_outlined, color: Colors.white, size: 60,),
+                          ),
+                          Text('Login or Sign Up To Continue', style: TextStyle(color: Colors.white, fontSize: 20),),
+                        ],
+                      )),
+                    ),
                   ),
                 ],
               ),

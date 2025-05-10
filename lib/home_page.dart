@@ -74,7 +74,7 @@ class Homepage extends StatelessWidget {
                             width: double.maxFinite,
                             height: 150,
                             child: Card(
-                              elevation: 10,
+                              elevation: 5,
                               color: const Color.fromARGB(255, 24, 24, 24),
                               child: Text("<Task name>"),
                             ),
