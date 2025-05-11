@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:life_points/add_task.dart';
+import 'package:life_points/edit_info.dart';
 import 'package:life_points/settings.dart';
 import 'package:life_points/file_io.dart'; // Import the utility function
 
@@ -10,20 +12,23 @@ class Homepage extends StatefulWidget {
 }
 
 class _HomepageState extends State<Homepage> {
-  String _username = "User"; // Default value
+  String _username = "User";
+  int _points = 0;
 
   @override
   void initState() {
     super.initState();
-    _loadUsername();
+    _loadUserData();
   }
 
-  Future<void> _loadUsername() async {
-    String name = await fetchUsername(); // Use the utility function
-    setState(() {
-      _username = name;
-    });
-  }
+Future<void> _loadUserData() async {
+  String name = await fetchValue('username') ?? 'User';
+  int points = await fetchValue('points') ?? 0;
+  setState(() {
+    _username = name;
+    _points = points;
+  });
+}
 
   @override
   Widget build(BuildContext context) {
@@ -44,13 +49,17 @@ class _HomepageState extends State<Homepage> {
           child: Container(color: Colors.black, height: 1.5),
         ),
         actions: [
+          IconButton(onPressed: () {
+            Navigator.push(context, MaterialPageRoute(builder: (context) => AddTask()));
+          },
+            icon: Icon(Icons.add),),
           IconButton(
             onPressed: () async {
               await Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => Settings()),
+                MaterialPageRoute(builder: (context) => EditInfo()),
               );
-              await _loadUsername(); // Always reload after returning
+              await _loadUserData(); // Always reload after returning
             },
             icon: Icon(Icons.account_circle_outlined),
           ),
@@ -81,10 +90,10 @@ class _HomepageState extends State<Homepage> {
             Container(
               margin: EdgeInsets.only(top: 10),
               child: Text(
-                "You have <points> points available",
+                "You have $_points points available",
                 style: TextStyle(fontSize: 21),
               ),
-            ), // TODO: Replace <points> with actual points
+            ),
             Container(
               margin: EdgeInsets.only(top: 200),
               child: Column(

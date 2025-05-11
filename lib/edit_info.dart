@@ -22,7 +22,11 @@ class _EditInfoState extends State<EditInfo> {
     String name = _nameController.text;
     if (name.isNotEmpty) {
       final userInfo = UserInfo();
-      await userInfo.writeData(name); // Save the name using the utility class
+      final existingData = await userInfo.readData();
+      await userInfo.writeData({
+        'username': name,
+        'points': existingData['points'] ?? 0,
+      });
   
       if (!mounted) return; // Ensure the widget is still in the tree
       ScaffoldMessenger.of(context).showSnackBar(

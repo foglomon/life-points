@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:life_points/edit_info.dart';
 
 class Settings extends StatelessWidget {
   const Settings({super.key});
@@ -35,41 +34,7 @@ class Settings extends StatelessWidget {
                       style: TextStyle(fontSize: 48, color: Colors.white),
                     ),
                   ),
-                  SizedBox(
-                    width: double.maxFinite,
-                    height: 100,
-                    child: InkWell(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) => EditInfo()),
-                        );
-                      },
-                      child: Card(
-                        elevation: 5,
-                        color: const Color.fromARGB(255, 24, 24, 24),
-                        child: Row(
-                          children: [
-                            Padding(
-                              padding: const EdgeInsets.all(10.0),
-                              child: Icon(
-                                Icons.account_circle_outlined,
-                                color: Colors.white,
-                                size: 60,
-                              ),
-                            ),
-                            Text(
-                              'Enter your details to continue',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 20,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
+                  // TODO: Add setting options here
                 ],
               ),
             ),

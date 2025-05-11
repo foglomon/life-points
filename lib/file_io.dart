@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'dart:async';
+import 'dart:convert'; // Add this import for JSON support
 import 'package:path_provider/path_provider.dart';
 
 class UserInfo {
@@ -10,28 +11,29 @@ class UserInfo {
 
   Future<File> get _localFile async {
     final path = await _localPath;
-    return File('$path/data.txt');
+    return File('$path/data.json'); // Use .json extension
   }
 
-  Future<String> readData() async {
+  Future<Map<String, dynamic>> readData() async {
     try {
       final file = await _localFile;
       String contents = await file.readAsString();
-      return contents;
+      return json.decode(contents);
     } catch (e) {
-      return ''; // Return empty string if no data is found
+      // Return default data if no data is found or error occurs
+      return {'username': 'User', 'points': 0};
     }
   }
 
-  Future<File> writeData(String data) async {
+  Future<File> writeData(Map<String, dynamic> data) async {
     final file = await _localFile;
-    return file.writeAsString(data);
+    return file.writeAsString(json.encode(data));
   }
 }
 
-// Utility function to fetch username
-Future<String> fetchUsername() async {
+// Utility function to fetch data
+Future<dynamic> fetchValue(String key) async {
   final userInfo = UserInfo();
-  String name = await userInfo.readData();
-  return name.isNotEmpty ? name : "User"; // Default to "User" if no name is found
+  final data = await userInfo.readData();
+  return data[key];
 }
