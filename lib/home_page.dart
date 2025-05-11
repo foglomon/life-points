@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:life_points/login.dart';
 import 'package:life_points/settings.dart';
 import 'package:life_points/file_io.dart'; // Import the utility function
 
@@ -47,15 +46,11 @@ class _HomepageState extends State<Homepage> {
         actions: [
           IconButton(
             onPressed: () async {
-              final updatedName = await Navigator.push(
+              await Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => Login()),
+                MaterialPageRoute(builder: (context) => Settings()),
               );
-              if (updatedName != null && updatedName is String) {
-                setState(() {
-                  _username = updatedName;
-                });
-              }
+              await _loadUsername(); // Always reload after returning
             },
             icon: Icon(Icons.account_circle_outlined),
           ),
@@ -94,10 +89,7 @@ class _HomepageState extends State<Homepage> {
               margin: EdgeInsets.only(top: 200),
               child: Column(
                 children: [
-                  Text(
-                    "Available Tasks:",
-                    style: TextStyle(fontSize: 24),
-                  ),
+                  Text("Available Tasks:", style: TextStyle(fontSize: 24)),
                   SizedBox(
                     width: double.maxFinite,
                     height: 150,

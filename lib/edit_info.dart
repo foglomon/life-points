@@ -1,15 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:life_points/file_io.dart';
 
-class Login extends StatefulWidget {
-  const Login({super.key});
+class EditInfo extends StatefulWidget {
+  final String? currentName;
+  const EditInfo({super.key, this.currentName});
 
   @override
-  State<Login> createState() => _LoginState();
+  State<EditInfo> createState() => _EditInfoState();
 }
 
-class _LoginState extends State<Login> {
-  final TextEditingController _nameController = TextEditingController();
+class _EditInfoState extends State<EditInfo> {
+  late TextEditingController _nameController;
+
+  @override
+  void initState() {
+    super.initState();
+    _nameController = TextEditingController(text: widget.currentName ?? "");
+  }
 
   void _saveData() async {
     String name = _nameController.text;
@@ -79,7 +86,7 @@ class _LoginState extends State<Login> {
                         ),
                       ),
                       Text(
-                        'Login to your account',
+                        'Update details',
                         style: TextStyle(
                           color: Colors.white,
                           fontSize: 20,

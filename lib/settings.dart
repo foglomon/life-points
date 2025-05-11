@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:life_points/login.dart';
+import 'package:life_points/edit_info.dart';
 
 class Settings extends StatelessWidget {
   const Settings({super.key});
@@ -42,7 +42,7 @@ class Settings extends StatelessWidget {
                       onTap: () {
                         Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (context) => Login()),
+                          MaterialPageRoute(builder: (context) => EditInfo()),
                         );
                       },
                       child: Card(
@@ -59,7 +59,7 @@ class Settings extends StatelessWidget {
                               ),
                             ),
                             Text(
-                              'Login or Sign Up To Continue',
+                              'Enter your details to continue',
                               style: TextStyle(
                                 color: Colors.white,
                                 fontSize: 20,
