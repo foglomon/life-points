@@ -22,8 +22,8 @@ class Settings extends StatelessWidget {
             ),
             body: Container(
               color: Colors.grey[900],
-              height: double.maxFinite,
-              width: double.maxFinite,
+              height: double.infinity,
+              width: double.infinity,
               padding: const EdgeInsets.all(16.5),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,

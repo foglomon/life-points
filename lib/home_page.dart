@@ -21,14 +21,14 @@ class _HomepageState extends State<Homepage> {
     _loadUserData();
   }
 
-Future<void> _loadUserData() async {
-  String name = await fetchValue('username') ?? 'User';
-  int points = await fetchValue('points') ?? 0;
-  setState(() {
-    _username = name;
-    _points = points;
-  });
-}
+  Future<void> _loadUserData() async {
+    String name = await fetchValue('username') ?? 'User';
+    int points = await fetchValue('points') ?? 0;
+    setState(() {
+      _username = name;
+      _points = points;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -49,10 +49,15 @@ Future<void> _loadUserData() async {
           child: Container(color: Colors.black, height: 1.5),
         ),
         actions: [
-          IconButton(onPressed: () {
-            Navigator.push(context, MaterialPageRoute(builder: (context) => AddTask()));
-          },
-            icon: Icon(Icons.add),),
+          IconButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => AddTask()),
+              );
+            },
+            icon: Icon(Icons.add),
+          ),
           IconButton(
             onPressed: () async {
               await Navigator.push(
@@ -76,8 +81,8 @@ Future<void> _loadUserData() async {
         ],
       ),
       body: Container(
-        height: double.maxFinite,
-        width: double.maxFinite,
+        height: double.infinity,
+        width: double.infinity,
         padding: const EdgeInsets.all(16.5),
         color: Colors.grey[900],
         child: Column(
@@ -100,7 +105,7 @@ Future<void> _loadUserData() async {
                 children: [
                   Text("Available Tasks:", style: TextStyle(fontSize: 24)),
                   SizedBox(
-                    width: double.maxFinite,
+                    width: double.infinity,
                     height: 150,
                     child: Card(
                       elevation: 5,
