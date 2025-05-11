@@ -16,11 +16,15 @@ class _LoginState extends State<Login> {
     if (name.isNotEmpty) {
       final userInfo = UserInfo();
       await userInfo.writeData(name); // Save the name using the utility class
-      // ignore: use_build_context_synchronously
+  
+      if (!mounted) return; // Ensure the widget is still in the tree
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Name saved successfully!')),
       );
+  
+      Navigator.pop(context, name); // Pass the updated name back to the previous screen
     } else {
+      if (!mounted) return; // Ensure the widget is still in the tree
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Please enter a name.')),
       );

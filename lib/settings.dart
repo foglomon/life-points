@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:life_points/file_io.dart';
 import 'package:life_points/login.dart';
 
 class Settings extends StatelessWidget {
@@ -41,17 +40,34 @@ class Settings extends StatelessWidget {
                     height: 100,
                     child: InkWell(
                       onTap: () {
-                        Navigator.push(context, MaterialPageRoute(builder: (context) => Login()));
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => Login()),
+                        );
                       },
-                      child: Card(elevation: 5, color: const Color.fromARGB(255, 24, 24, 24),child: Row(
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.all(10.0),
-                            child: Icon(Icons.account_circle_outlined, color: Colors.white, size: 60,),
-                          ),
-                          Text('Login or Sign Up To Continue', style: TextStyle(color: Colors.white, fontSize: 20),),
-                        ],
-                      )),
+                      child: Card(
+                        elevation: 5,
+                        color: const Color.fromARGB(255, 24, 24, 24),
+                        child: Row(
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.all(10.0),
+                              child: Icon(
+                                Icons.account_circle_outlined,
+                                color: Colors.white,
+                                size: 60,
+                              ),
+                            ),
+                            Text(
+                              'Login or Sign Up To Continue',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 20,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
                   ),
                 ],

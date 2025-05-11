@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:life_points/login.dart';
 import 'package:life_points/settings.dart';
 import 'package:life_points/file_io.dart'; // Import the utility function
 
@@ -45,8 +46,16 @@ class _HomepageState extends State<Homepage> {
         ),
         actions: [
           IconButton(
-            onPressed: () {
-              // TODO: User profile sign up and log in page
+            onPressed: () async {
+              final updatedName = await Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => Login()),
+              );
+              if (updatedName != null && updatedName is String) {
+                setState(() {
+                  _username = updatedName;
+                });
+              }
             },
             icon: Icon(Icons.account_circle_outlined),
           ),
