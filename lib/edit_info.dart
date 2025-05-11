@@ -27,18 +27,21 @@ class _EditInfoState extends State<EditInfo> {
         'username': name,
         'points': existingData['points'] ?? 0,
       });
-  
+
       if (!mounted) return; // Ensure the widget is still in the tree
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Name saved successfully!')),
-      );
-  
-      Navigator.pop(context, name); // Pass the updated name back to the previous screen
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Name saved successfully!')));
+
+      Navigator.pop(
+        context,
+        name,
+      ); // Pass the updated name back to the previous screen
     } else {
       if (!mounted) return; // Ensure the widget is still in the tree
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Please enter a name.')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Please enter a name.')));
     }
   }
 
@@ -67,10 +70,7 @@ class _EditInfoState extends State<EditInfo> {
                 child: Container(
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(20),
-                    border: Border.all(
-                      color: Colors.white,
-                      width: 2,
-                    ),
+                    border: Border.all(color: Colors.white, width: 2),
                   ),
                 ),
               ),
@@ -78,46 +78,59 @@ class _EditInfoState extends State<EditInfo> {
                 child: Padding(
                   padding: const EdgeInsets.all(40.0),
                   child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(
-                        'LIFE POINTS',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w800,
-                          fontStyle: FontStyle.italic,
-                          fontSize: 47,
-                        ),
-                      ),
-                      Text(
-                        'Update details',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 20,
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.only(top: 20.0),
-                        child: TextField(
-                          controller: _nameController,
-                          decoration: InputDecoration(
-                            labelText: 'Name',
-                            labelStyle: TextStyle(color: Colors.white),
-                            enabledBorder: OutlineInputBorder(
-                              borderSide: BorderSide(color: Colors.white),
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderSide: BorderSide(color: Colors.blue),
+                      Column(
+                        children: [
+                          Text(
+                            'LIFE POINTS',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w800,
+                              fontStyle: FontStyle.italic,
+                              fontSize: 47,
                             ),
                           ),
-                          style: TextStyle(color: Colors.white),
-                          cursorColor: Colors.white38,
-                        ),
+                          SizedBox(height: 10),
+                          Text(
+                            'Update details',
+                            style: TextStyle(color: Colors.white, fontSize: 20),
+                          ),
+                          SizedBox(height: 40),
+                          Padding(
+                            padding: const EdgeInsets.only(top: 20.0),
+                            child: TextField(
+                              controller: _nameController,
+                              decoration: InputDecoration(
+                                labelText: 'Name',
+                                labelStyle: TextStyle(color: Colors.white),
+                                enabledBorder: OutlineInputBorder(
+                                  borderSide: BorderSide(color: Colors.white),
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderSide: BorderSide(color: Colors.blue),
+                                ),
+                              ),
+                              style: TextStyle(color: Colors.white),
+                              cursorColor: Colors.white38,
+                            ),
+                          ),
+                        ],
                       ),
-                      SizedBox(height: 20),
                       ElevatedButton(
                         onPressed: _saveData,
-                        child: Text('Save'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.blue,
+                          foregroundColor: Colors.white,
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 50,
+                            vertical: 15,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                        child: Text('Save', style: TextStyle(fontSize: 16)),
                       ),
                     ],
                   ),

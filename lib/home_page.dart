@@ -14,11 +14,13 @@ class Homepage extends StatefulWidget {
 class _HomepageState extends State<Homepage> {
   String _username = "User";
   int _points = 0;
+  List<Map<String, dynamic>> _tasks = [];
 
   @override
   void initState() {
     super.initState();
     _loadUserData();
+    _loadTasks();
   }
 
   Future<void> _loadUserData() async {
@@ -28,6 +30,19 @@ class _HomepageState extends State<Homepage> {
       _username = name;
       _points = points;
     });
+  }
+
+  Future<void> _loadTasks() async {
+    final taskInfo = TaskInfo();
+    final tasks = await taskInfo.readTasks();
+    setState(() {
+      _tasks = tasks;
+    });
+  }
+
+  String _formatDate(String isoDate) {
+    final date = DateTime.parse(isoDate);
+    return '${date.day}/${date.month}/${date.year}';
   }
 
   @override
@@ -50,11 +65,12 @@ class _HomepageState extends State<Homepage> {
         ),
         actions: [
           IconButton(
-            onPressed: () {
-              Navigator.push(
+            onPressed: () async {
+              await Navigator.push(
                 context,
                 MaterialPageRoute(builder: (context) => AddTask()),
               );
+              _loadTasks(); // Reload tasks after adding a new one
             },
             icon: Icon(Icons.add),
           ),
@@ -64,7 +80,7 @@ class _HomepageState extends State<Homepage> {
                 context,
                 MaterialPageRoute(builder: (context) => EditInfo()),
               );
-              await _loadUserData(); // Always reload after returning
+              await _loadUserData();
             },
             icon: Icon(Icons.account_circle_outlined),
           ),
@@ -90,31 +106,112 @@ class _HomepageState extends State<Homepage> {
           children: [
             Text(
               "Hello, $_username",
-              style: TextStyle(fontSize: 48),
-            ), // Username is dynamically fetched
+              style: TextStyle(fontSize: 48, color: Colors.white),
+            ),
             Container(
               margin: EdgeInsets.only(top: 10),
               child: Text(
                 "You have $_points points available",
-                style: TextStyle(fontSize: 21),
+                style: TextStyle(fontSize: 21, color: Colors.white),
               ),
             ),
+            SizedBox(height: 40),
             Container(
-              margin: EdgeInsets.only(top: 200),
-              child: Column(
-                children: [
-                  Text("Available Tasks:", style: TextStyle(fontSize: 24)),
-                  SizedBox(
-                    width: double.infinity,
-                    height: 150,
-                    child: Card(
-                      elevation: 5,
-                      color: const Color.fromARGB(255, 24, 24, 24),
-                      child: Text("<Task name>"),
-                    ),
-                  ),
-                ],
+              margin: EdgeInsets.only(top: 20),
+              child: Text(
+                "Available Tasks:",
+                style: TextStyle(fontSize: 24, color: Colors.white),
               ),
+            ),
+            Expanded(
+              child:
+                  _tasks.isEmpty
+                      ? Center(
+                        child: Text(
+                          "No tasks available",
+                          style: TextStyle(color: Colors.white70, fontSize: 18),
+                        ),
+                      )
+                      : ListView.builder(
+                        itemCount: _tasks.length,
+                        itemBuilder: (context, index) {
+                          final task = _tasks[index];
+                          return Card(
+                            margin: EdgeInsets.symmetric(vertical: 8),
+                            elevation: 5,
+                            color: const Color.fromARGB(255, 24, 24, 24),
+                            child: Padding(
+                              padding: const EdgeInsets.all(16.0),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Expanded(
+                                        child: Text(
+                                          task['name'],
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 20,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ),
+                                      Container(
+                                        padding: EdgeInsets.symmetric(
+                                          horizontal: 12,
+                                          vertical: 6,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: Colors.blue,
+                                          borderRadius: BorderRadius.circular(
+                                            20,
+                                          ),
+                                        ),
+                                        child: Text(
+                                          "${task['points']} points",
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  SizedBox(height: 8),
+                                  Row(
+                                    children: [
+                                      Icon(
+                                        Icons.calendar_today,
+                                        color: Colors.white70,
+                                        size: 16,
+                                      ),
+                                      SizedBox(width: 8),
+                                      Text(
+                                        _formatDate(task['date']),
+                                        style: TextStyle(color: Colors.white70),
+                                      ),
+                                      SizedBox(width: 16),
+                                      Icon(
+                                        Icons.access_time,
+                                        color: Colors.white70,
+                                        size: 16,
+                                      ),
+                                      SizedBox(width: 8),
+                                      Text(
+                                        task['time'],
+                                        style: TextStyle(color: Colors.white70),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        },
+                      ),
             ),
           ],
         ),
