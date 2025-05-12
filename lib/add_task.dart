@@ -12,6 +12,7 @@ class AddTask extends StatefulWidget {
 class _AddTaskState extends State<AddTask> {
   DateTime? selectedDate;
   TimeOfDay? selectedTime;
+  bool isUntimed = false;
   final TextEditingController _taskNameController = TextEditingController();
   final TextEditingController _pointsController = TextEditingController();
 
@@ -114,25 +115,33 @@ class _AddTaskState extends State<AddTask> {
       return;
     }
 
-    if (selectedDate == null) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Please select a date')));
-      return;
-    }
+    if (!isUntimed) {
+      if (selectedDate == null) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Please select a date')));
+        return;
+      }
 
-    if (selectedTime == null) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Please select a time')));
-      return;
+      if (selectedTime == null) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Please select a time')));
+        return;
+      }
     }
 
     final task = {
       'name': _taskNameController.text,
       'points': int.parse(_pointsController.text),
-      'date': selectedDate!.toIso8601String(),
-      'time': '${selectedTime!.hour}:${selectedTime!.minute}',
+      'isUntimed': isUntimed,
+      'date': isUntimed ? null : selectedDate?.toIso8601String(),
+      'time':
+          isUntimed
+              ? null
+              : selectedTime != null
+              ? '${selectedTime!.hour}:${selectedTime!.minute}'
+              : null,
       'completed': false,
     };
 
@@ -249,82 +258,115 @@ class _AddTaskState extends State<AddTask> {
                           ),
                           SizedBox(height: 20),
                           Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Expanded(
-                                child: InkWell(
-                                  onTap: () => _selectDate(context),
-                                  child: Container(
-                                    padding: EdgeInsets.symmetric(vertical: 12),
-                                    decoration: BoxDecoration(
-                                      border: Border(
-                                        bottom: BorderSide(
-                                          color: Colors.white,
-                                          width: 1,
-                                        ),
-                                      ),
-                                    ),
-                                    child: Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        Text(
-                                          selectedDate == null
-                                              ? 'Select Date'
-                                              : '${selectedDate!.day}/${selectedDate!.month}/${selectedDate!.year}',
-                                          style: TextStyle(
-                                            color: Colors.white,
-                                            fontSize: 16,
-                                          ),
-                                        ),
-                                        Icon(
-                                          Icons.calendar_today,
-                                          color: Colors.white,
-                                          size: 20,
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
+                              Checkbox(
+                                value: isUntimed,
+                                onChanged: (bool? value) {
+                                  setState(() {
+                                    isUntimed = value ?? false;
+                                    if (isUntimed) {
+                                      selectedDate = null;
+                                      selectedTime = null;
+                                    }
+                                  });
+                                },
+                                activeColor: Colors.blue,
+                                checkColor: Colors.white,
                               ),
-                              SizedBox(width: 20),
-                              Expanded(
-                                child: InkWell(
-                                  onTap: () => _selectTime(context),
-                                  child: Container(
-                                    padding: EdgeInsets.symmetric(vertical: 12),
-                                    decoration: BoxDecoration(
-                                      border: Border(
-                                        bottom: BorderSide(
-                                          color: Colors.white,
-                                          width: 1,
-                                        ),
-                                      ),
-                                    ),
-                                    child: Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        Text(
-                                          selectedTime == null
-                                              ? 'Select Time'
-                                              : _formatTime(selectedTime!),
-                                          style: TextStyle(
-                                            color: Colors.white,
-                                            fontSize: 16,
-                                          ),
-                                        ),
-                                        Icon(
-                                          Icons.access_time,
-                                          color: Colors.white,
-                                          size: 20,
-                                        ),
-                                      ],
-                                    ),
-                                  ),
+                              Text(
+                                'Untimed Task',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 16,
                                 ),
                               ),
                             ],
                           ),
+                          if (!isUntimed) ...[
+                            SizedBox(height: 20),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: InkWell(
+                                    onTap: () => _selectDate(context),
+                                    child: Container(
+                                      padding: EdgeInsets.symmetric(
+                                        vertical: 12,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        border: Border(
+                                          bottom: BorderSide(
+                                            color: Colors.white,
+                                            width: 1,
+                                          ),
+                                        ),
+                                      ),
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Text(
+                                            selectedDate == null
+                                                ? 'Select Date'
+                                                : '${selectedDate!.day}/${selectedDate!.month}/${selectedDate!.year}',
+                                            style: TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 16,
+                                            ),
+                                          ),
+                                          Icon(
+                                            Icons.calendar_today,
+                                            color: Colors.white,
+                                            size: 20,
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                SizedBox(width: 20),
+                                Expanded(
+                                  child: InkWell(
+                                    onTap: () => _selectTime(context),
+                                    child: Container(
+                                      padding: EdgeInsets.symmetric(
+                                        vertical: 12,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        border: Border(
+                                          bottom: BorderSide(
+                                            color: Colors.white,
+                                            width: 1,
+                                          ),
+                                        ),
+                                      ),
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Text(
+                                            selectedTime == null
+                                                ? 'Select Time'
+                                                : _formatTime(selectedTime!),
+                                            style: TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 16,
+                                            ),
+                                          ),
+                                          Icon(
+                                            Icons.access_time,
+                                            color: Colors.white,
+                                            size: 20,
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
                         ],
                       ),
                       ElevatedButton(
