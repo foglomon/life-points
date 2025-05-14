@@ -12,8 +12,8 @@ class Storage {
     await ServiceLocator.prefs.setString(_usernameKey, username);
   }
 
-  static Future<String> getUsername() async {
-    return ServiceLocator.prefs.getString(_usernameKey) ?? 'User';
+  static Future<String?> getUsername() async {
+    return ServiceLocator.prefs.getString(_usernameKey);
   }
 
   static Future<void> savePoints(int points) async {

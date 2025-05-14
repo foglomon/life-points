@@ -27,7 +27,8 @@ class MyApp extends StatelessWidget {
         textTheme: const TextTheme(bodyMedium: TextStyle(color: Colors.white)),
       ),
       debugShowCheckedModeBanner: false,
-      home: Homepage(),
+      initialRoute: '/',
+      routes: {'/': (context) => const Homepage()},
     );
   }
 }

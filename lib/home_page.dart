@@ -4,6 +4,8 @@ import 'package:life_points/edit_info.dart';
 import 'package:life_points/settings.dart';
 import 'package:life_points/storage.dart';
 import 'package:life_points/overdue_service.dart';
+import 'package:life_points/signup_page.dart';
+import 'package:life_points/tutorial_page.dart';
 
 class Homepage extends StatefulWidget {
   const Homepage({super.key});
@@ -63,10 +65,41 @@ class _HomepageState extends State<Homepage> {
   Future<void> _loadUserData() async {
     final username = await Storage.getUsername();
     final points = await Storage.getPoints();
-    setState(() {
-      _username = username;
-      _points = points;
-    });
+
+    if (username == null && mounted) {
+      // Show the signup page if username is not set
+      final result = await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => const SignupPage(),
+          fullscreenDialog: true,
+        ),
+      );
+
+      if (result == true) {
+        // Get the new username after signup
+        final newUsername = await Storage.getUsername();
+        if (newUsername != null && mounted) {
+          // Show the tutorial after successful signup
+          await Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => TutorialPage(username: newUsername),
+            ),
+          );
+          // Set the state directly instead of calling _loadUserData again
+          setState(() {
+            _username = newUsername;
+            _points = points;
+          });
+        }
+      }
+    } else {
+      setState(() {
+        _username = username ?? "User";
+        _points = points;
+      });
+    }
   }
 
   Future<void> _loadTasks() async {
@@ -147,7 +180,12 @@ class _HomepageState extends State<Homepage> {
       appBar: AppBar(
         title: Text(
           'Life Points',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800),
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.w800,
+            fontStyle: FontStyle.italic,
+            fontSize: 28,
+          ),
         ),
         backgroundColor: Colors.grey[900],
         actions: [
@@ -317,16 +355,22 @@ class _HomepageState extends State<Homepage> {
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () async {
-          await Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => AddTask()),
-          );
-          _loadTasks(); // Reload tasks after adding a new one
-        },
-        backgroundColor: Colors.blue,
-        child: Icon(Icons.add),
+      floatingActionButton: Tooltip(
+        message: 'Add new task',
+        preferBelow: false,
+        verticalOffset: 25,
+        child: FloatingActionButton.extended(
+          onPressed: () async {
+            await Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => AddTask()),
+            );
+            _loadTasks();
+          },
+          backgroundColor: Colors.blue,
+          icon: Icon(Icons.add),
+          label: Text('Add Task'),
+        ),
       ),
     );
   }
