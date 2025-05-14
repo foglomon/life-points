@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:life_points/add_task.dart';
 import 'package:life_points/edit_info.dart';
 import 'package:life_points/settings.dart';
-import 'package:life_points/file_io.dart'; // Import the utility function
+import 'package:life_points/storage.dart';
+import 'package:life_points/overdue_service.dart';
 
 class Homepage extends StatefulWidget {
   const Homepage({super.key});
@@ -15,26 +16,61 @@ class _HomepageState extends State<Homepage> {
   String _username = "User";
   int _points = 0;
   List<Map<String, dynamic>> _tasks = [];
+  final OverdueService _overdueService = OverdueService();
 
   @override
   void initState() {
     super.initState();
     _loadUserData();
     _loadTasks();
+
+    // Start the overdue service
+    _overdueService.startService();
+
+    // Listen for point updates from the service
+    _overdueService.addPointsUpdateListener(_handlePointsUpdate);
+  }
+
+  @override
+  void dispose() {
+    // Remove the listener when disposing
+    _overdueService.removePointsUpdateListener(_handlePointsUpdate);
+    _overdueService.stopService();
+    super.dispose();
+  }
+
+  // Callback for when points are updated by the overdue service
+  void _handlePointsUpdate(int newPoints) {
+    debugPrint('Home page received points update: $newPoints');
+    setState(() {
+      _points = newPoints;
+    });
+
+    // Show a snackbar to inform the user
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Points deducted due to overdue tasks! New total: $_points',
+          ),
+          backgroundColor: Colors.red,
+          duration: const Duration(seconds: 3),
+        ),
+      );
+    }
   }
 
   Future<void> _loadUserData() async {
-    String name = await fetchValue('username') ?? 'User';
-    int points = await fetchValue('points') ?? 0;
+    final username = await Storage.getUsername();
+    final points = await Storage.getPoints();
     setState(() {
-      _username = name;
+      _username = username;
       _points = points;
     });
   }
 
   Future<void> _loadTasks() async {
-    final taskInfo = TaskInfo();
-    final tasks = await taskInfo.readTasks();
+    final tasks = await Storage.getTasks();
 
     // Sort tasks
     tasks.sort((a, b) {
@@ -71,293 +107,226 @@ class _HomepageState extends State<Homepage> {
           int.parse(bTimeParts[1]),
         );
 
-        // Compare the full date and time
         return aDateTime.compareTo(bDateTime);
       } catch (e) {
-        debugPrint('Error sorting tasks: $e');
         return 0;
       }
     });
-
-    // Print sorted tasks for debugging
-    for (var task in tasks) {
-      if (!(task['isUntimed'] ?? false)) {
-        debugPrint(
-          'Task: ${task['name']}, Date: ${task['date']}, Time: ${task['time']}',
-        );
-      } else {
-        debugPrint('Untimed Task: ${task['name']}');
-      }
-    }
 
     setState(() {
       _tasks = tasks;
     });
   }
 
-  String _formatDate(String isoDate) {
-    final date = DateTime.parse(isoDate);
-    return '${date.day}/${date.month}/${date.year}';
+  Future<void> _updatePoints(int points) async {
+    final newPoints = _points + points;
+    await Storage.savePoints(newPoints);
+    setState(() {
+      _points = newPoints;
+    });
   }
 
-  bool _isTaskOverdue(Map<String, dynamic> task) {
-    if (task['isUntimed'] ?? false) return false;
+  Future<void> _completeTask(int index) async {
+    final task = _tasks[index];
+    if (task['completed'] == true) return;
 
-    final taskDate = DateTime.parse(task['date']);
-    final timeParts = task['time'].split(':');
-    final taskDateTime = DateTime(
-      taskDate.year,
-      taskDate.month,
-      taskDate.day,
-      int.parse(timeParts[0]),
-      int.parse(timeParts[1]),
+    task['completed'] = true;
+    await Storage.saveTasks(_tasks);
+    await _updatePoints(task['points'] as int);
+
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Task completed! +${task['points']} points')),
     );
-
-    return taskDateTime.isBefore(DateTime.now());
-  }
-
-  String _formatTimeRemaining(Map<String, dynamic> task) {
-    if (task['isUntimed'] ?? false) return '';
-
-    final taskDate = DateTime.parse(task['date']);
-    final timeParts = (task['time'] as String).split(':');
-    final taskDateTime = DateTime(
-      taskDate.year,
-      taskDate.month,
-      taskDate.day,
-      int.parse(timeParts[0]),
-      int.parse(timeParts[1]),
-    );
-
-    final now = DateTime.now();
-    final difference = taskDateTime.difference(now);
-
-    if (difference.isNegative) {
-      return 'Overdue';
-    }
-
-    if (difference.inDays > 0) {
-      return '${difference.inDays}d remaining';
-    } else if (difference.inHours > 0) {
-      return '${difference.inHours}h remaining';
-    } else {
-      return '${difference.inMinutes}m remaining';
-    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[800],
+      backgroundColor: Colors.grey[900],
       appBar: AppBar(
-        title: const Text(
-          'LIFE POINTS',
-          style: TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.w800,
-            fontStyle: FontStyle.italic,
-          ),
+        title: Text(
+          'Life Points',
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800),
         ),
         backgroundColor: Colors.grey[900],
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(1),
-          child: Container(color: Colors.black, height: 1.5),
-        ),
         actions: [
           IconButton(
-            onPressed: () async {
-              await Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => AddTask()),
-              );
-              _loadTasks(); // Reload tasks after adding a new one
-            },
-            icon: Icon(Icons.add),
-          ),
-          IconButton(
-            onPressed: () async {
-              await Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => EditInfo()),
-              );
-              await _loadUserData();
-            },
-            icon: Icon(Icons.account_circle_outlined),
-          ),
-          IconButton(
+            icon: Icon(Icons.settings, color: Colors.white),
             onPressed: () async {
               await Navigator.push(
                 context,
                 MaterialPageRoute(builder: (context) => Settings()),
               );
-              _loadTasks(); // Always reload tasks when returning from settings
+              _loadTasks(); // Reload tasks after returning from settings
             },
-            icon: Icon(Icons.settings),
-            color: Colors.white,
           ),
         ],
       ),
-      body: Container(
-        height: double.infinity,
-        width: double.infinity,
-        padding: const EdgeInsets.all(16.5),
-        color: Colors.grey[900],
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              "Hello, $_username",
-              style: TextStyle(fontSize: 48, color: Colors.white),
+      body: Column(
+        children: [
+          Container(
+            padding: EdgeInsets.all(16),
+            color: Colors.grey[800],
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                GestureDetector(
+                  onTap: () async {
+                    final result = await Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => EditInfo(currentName: _username),
+                      ),
+                    );
+                    if (result != null) {
+                      await Storage.saveUsername(result);
+                      setState(() {
+                        _username = result;
+                      });
+                    }
+                  },
+                  child: Text(
+                    _username,
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                Text(
+                  '$_points points',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
             ),
-            Container(
-              margin: EdgeInsets.only(top: 10),
-              child: Text(
-                "You have $_points points available",
-                style: TextStyle(fontSize: 21, color: Colors.white),
-              ),
-            ),
-            SizedBox(height: 40),
-            Container(
-              margin: EdgeInsets.only(top: 20),
-              child: Text(
-                "Available Tasks:",
-                style: TextStyle(fontSize: 24, color: Colors.white),
-              ),
-            ),
-            Expanded(
-              child:
-                  _tasks.isEmpty
-                      ? Center(
-                        child: Text(
-                          "No tasks available",
-                          style: TextStyle(color: Colors.white70, fontSize: 18),
-                        ),
-                      )
-                      : ListView.builder(
-                        itemCount: _tasks.length,
-                        itemBuilder: (context, index) {
-                          final task = _tasks[index];
-                          return Card(
-                            margin: EdgeInsets.symmetric(vertical: 8),
-                            elevation: 5,
-                            color:
-                                _isTaskOverdue(task)
-                                    ? const Color.fromARGB(
-                                      255,
-                                      80,
-                                      0,
-                                      0,
-                                    ) // Dark red for overdue tasks
-                                    : const Color.fromARGB(
-                                      255,
-                                      24,
-                                      24,
-                                      24,
-                                    ), // Original dark color
-                            child: Padding(
-                              padding: const EdgeInsets.all(16.0),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Expanded(
-                                        child: Text(
-                                          task['name'],
-                                          style: TextStyle(
-                                            color: Colors.white,
-                                            fontSize: 20,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-                                      ),
-                                      Container(
-                                        padding: EdgeInsets.symmetric(
-                                          horizontal: 12,
-                                          vertical: 6,
-                                        ),
-                                        decoration: BoxDecoration(
-                                          color: Colors.blue,
-                                          borderRadius: BorderRadius.circular(
-                                            20,
-                                          ),
-                                        ),
-                                        child: Text(
-                                          "${task['points']} points",
-                                          style: TextStyle(
-                                            color: Colors.white,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  SizedBox(height: 8),
-                                  Row(
-                                    children: [
-                                      if (!(task['isUntimed'] ?? false)) ...[
-                                        Icon(
-                                          Icons.calendar_today,
-                                          color: Colors.white70,
-                                          size: 16,
-                                        ),
-                                        SizedBox(width: 8),
-                                        Text(
-                                          _formatDate(task['date']),
-                                          style: TextStyle(
-                                            color: Colors.white70,
-                                          ),
-                                        ),
-                                        SizedBox(width: 16),
-                                        Icon(
-                                          Icons.access_time,
-                                          color: Colors.white70,
-                                          size: 16,
-                                        ),
-                                        SizedBox(width: 8),
-                                        Text(
-                                          task['time'],
-                                          style: TextStyle(
-                                            color: Colors.white70,
-                                          ),
-                                        ),
-                                        SizedBox(width: 16),
-                                        Text(
-                                          _formatTimeRemaining(task),
-                                          style: TextStyle(
-                                            color:
-                                                _isTaskOverdue(task)
-                                                    ? Colors.red
-                                                    : Colors.white70,
-                                          ),
-                                        ),
-                                      ] else ...[
-                                        Icon(
-                                          Icons.schedule,
-                                          color: Colors.white70,
-                                          size: 16,
-                                        ),
-                                        SizedBox(width: 8),
-                                        Text(
-                                          'Untimed Task',
-                                          style: TextStyle(
-                                            color: Colors.white70,
-                                          ),
-                                        ),
-                                      ],
-                                    ],
-                                  ),
-                                ],
+          ),
+          Expanded(
+            child: ListView.builder(
+              itemCount: _tasks.length,
+              itemBuilder: (context, index) {
+                final task = _tasks[index];
+                final isCompleted = task['completed'] == true;
+                final isUntimed = task['isUntimed'] == true;
+
+                // Determine if the task is overdue
+                bool isOverdue = false;
+                Duration? timeRemaining;
+                if (!isUntimed && !isCompleted) {
+                  try {
+                    final taskDate = DateTime.parse(task['date']);
+                    final timeParts = (task['time'] as String).split(':');
+                    final taskDateTime = DateTime(
+                      taskDate.year,
+                      taskDate.month,
+                      taskDate.day,
+                      int.parse(timeParts[0]),
+                      int.parse(timeParts[1]),
+                    );
+                    final now = DateTime.now();
+                    isOverdue = taskDateTime.isBefore(now);
+                    if (!isOverdue) {
+                      timeRemaining = taskDateTime.difference(now);
+                    }
+                  } catch (e) {
+                    isOverdue = false;
+                  }
+                }
+
+                String? subtitleText;
+                if (!isUntimed) {
+                  final dateStr = task['date'].split('T')[0];
+                  final timeStr = task['time'];
+                  if (isOverdue) {
+                    subtitleText = '$dateStr $timeStr   •   Overdue';
+                  } else if (timeRemaining != null) {
+                    String remaining;
+                    if (timeRemaining.inDays > 0) {
+                      remaining =
+                          '${timeRemaining.inDays}d ${timeRemaining.inHours % 24}h remaining';
+                    } else if (timeRemaining.inHours > 0) {
+                      remaining =
+                          '${timeRemaining.inHours}h ${timeRemaining.inMinutes % 60}m remaining';
+                    } else if (timeRemaining.inMinutes > 0) {
+                      remaining = '${timeRemaining.inMinutes}m remaining';
+                    } else {
+                      remaining = 'Less than a minute remaining';
+                    }
+                    subtitleText = '$dateStr $timeStr   •   $remaining';
+                  } else {
+                    subtitleText = '$dateStr $timeStr';
+                  }
+                }
+
+                return Card(
+                  color: isOverdue ? Colors.red[900] : Colors.grey[800],
+                  margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  child: ListTile(
+                    title: Text(
+                      task['name'],
+                      style: TextStyle(
+                        color: Colors.white,
+                        decoration:
+                            isCompleted ? TextDecoration.lineThrough : null,
+                      ),
+                    ),
+                    subtitle:
+                        isUntimed
+                            ? null
+                            : Text(
+                              subtitleText!,
+                              style: TextStyle(
+                                color:
+                                    isOverdue
+                                        ? Colors.redAccent
+                                        : Colors.white70,
+                                fontWeight: isOverdue ? FontWeight.bold : null,
                               ),
                             ),
-                          );
-                        },
-                      ),
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          '+${task['points']}',
+                          style: TextStyle(
+                            color: Colors.green,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        SizedBox(width: 8),
+                        IconButton(
+                          icon: Icon(
+                            isCompleted
+                                ? Icons.check_circle
+                                : Icons.circle_outlined,
+                            color: isCompleted ? Colors.green : Colors.white,
+                          ),
+                          onPressed: () => _completeTask(index),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
             ),
-          ],
-        ),
+          ),
+        ],
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () async {
+          await Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => AddTask()),
+          );
+          _loadTasks(); // Reload tasks after adding a new one
+        },
+        backgroundColor: Colors.blue,
+        child: Icon(Icons.add),
       ),
     );
   }

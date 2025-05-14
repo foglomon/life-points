@@ -1,8 +1,60 @@
 import 'package:flutter/material.dart';
 import 'package:life_points/delete_task.dart';
+import 'package:life_points/storage.dart';
 
-class Settings extends StatelessWidget {
+class Settings extends StatefulWidget {
   const Settings({super.key});
+
+  @override
+  State<Settings> createState() => _SettingsState();
+}
+
+class _SettingsState extends State<Settings> {
+  String selectedFrequency = 'Every Day';
+  final TextEditingController pointsController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    _loadOverdueSettings();
+  }
+
+  @override
+  void dispose() {
+    pointsController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _loadOverdueSettings() async {
+    final settings = await Storage.getOverdueSettings();
+    setState(() {
+      selectedFrequency = settings['frequency'];
+      pointsController.text = settings['points'].toString();
+    });
+  }
+
+  Future<void> _saveOverdueSettings() async {
+    if (pointsController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please enter points to deduct')),
+      );
+      return;
+    }
+
+    final points = int.tryParse(pointsController.text);
+    if (points == null || points < 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please enter a valid positive number')),
+      );
+      return;
+    }
+
+    await Storage.saveOverdueSettings(selectedFrequency, points);
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Settings saved successfully!')),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -51,6 +103,113 @@ class Settings extends StatelessWidget {
                       MaterialPageRoute(builder: (context) => DeleteTask()),
                     );
                   },
+                ),
+                SizedBox(height: 20),
+                Text(
+                  'Overdue Task Penalties',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                SizedBox(height: 20),
+                Container(
+                  padding: EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.grey[900],
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Deduct points on overdue tasks',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 18,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      SizedBox(height: 16),
+                      DropdownButtonFormField<String>(
+                        value: selectedFrequency,
+                        dropdownColor: Colors.grey[800],
+                        style: TextStyle(color: Colors.white),
+                        decoration: InputDecoration(
+                          labelText: 'Frequency',
+                          labelStyle: TextStyle(color: Colors.white70),
+                          enabledBorder: OutlineInputBorder(
+                            borderSide: BorderSide(color: Colors.grey[600]!),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderSide: BorderSide(color: Colors.blue),
+                          ),
+                        ),
+                        items:
+                            [
+                              'Never',
+                              'Every Minute',
+                              'Every Hour',
+                              'Every Day',
+                              'Every Week',
+                            ].map((String value) {
+                              return DropdownMenuItem<String>(
+                                value: value,
+                                child: Text(value),
+                              );
+                            }).toList(),
+                        onChanged: (String? newValue) {
+                          if (newValue != null) {
+                            setState(() {
+                              selectedFrequency = newValue;
+                              if (newValue == 'Never') {
+                                pointsController.text = '0';
+                              }
+                            });
+                          }
+                        },
+                      ),
+                      SizedBox(height: 16),
+                      if (selectedFrequency != 'Never')
+                        TextField(
+                          controller: pointsController,
+                          keyboardType: TextInputType.number,
+                          style: TextStyle(color: Colors.white),
+                          decoration: InputDecoration(
+                            labelText: 'Points to deduct',
+                            labelStyle: TextStyle(color: Colors.white70),
+                            enabledBorder: OutlineInputBorder(
+                              borderSide: BorderSide(color: Colors.grey[600]!),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderSide: BorderSide(color: Colors.blue),
+                            ),
+                          ),
+                        )
+                      else
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 8.0),
+                          child: Text(
+                            'Point deduction is disabled',
+                            style: TextStyle(
+                              color: Colors.grey[400],
+                              fontStyle: FontStyle.italic,
+                            ),
+                          ),
+                        ),
+                      SizedBox(height: 16),
+                      ElevatedButton(
+                        onPressed: _saveOverdueSettings,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.blue,
+                          foregroundColor: Colors.white,
+                          minimumSize: Size(double.infinity, 50),
+                        ),
+                        child: Text('Save Settings'),
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),

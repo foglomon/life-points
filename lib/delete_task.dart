@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:life_points/file_io.dart';
+import 'package:life_points/storage.dart';
 
 class DeleteTask extends StatefulWidget {
   const DeleteTask({super.key});
@@ -18,8 +18,7 @@ class _DeleteTaskState extends State<DeleteTask> {
   }
 
   Future<void> _loadTasks() async {
-    final taskInfo = TaskInfo();
-    final tasks = await taskInfo.readTasks();
+    final tasks = await Storage.getTasks();
     setState(() {
       _tasks = tasks;
     });
@@ -32,14 +31,13 @@ class _DeleteTaskState extends State<DeleteTask> {
 
   Future<void> _deleteTask(int index) async {
     try {
-      final taskInfo = TaskInfo();
       _tasks.removeAt(index);
-      await taskInfo.writeTasks(_tasks);
+      await Storage.saveTasks(_tasks);
 
       if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Task deleted successfully!')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Task deleted successfully!')),
+      );
       setState(() {});
     } catch (e) {
       if (!mounted) return;
@@ -64,135 +62,44 @@ class _DeleteTaskState extends State<DeleteTask> {
           child: Container(color: Colors.black, height: 1.5),
         ),
       ),
-      body: Container(
-        padding: const EdgeInsets.all(16.0),
-        child:
-            _tasks.isEmpty
-                ? Center(
-                  child: Text(
-                    "No tasks available",
-                    style: TextStyle(color: Colors.white70, fontSize: 18),
-                  ),
-                )
-                : ListView.builder(
-                  itemCount: _tasks.length,
-                  itemBuilder: (context, index) {
-                    final task = _tasks[index];
-                    return Card(
-                      margin: EdgeInsets.symmetric(vertical: 8),
-                      elevation: 5,
-                      color: const Color.fromARGB(255, 24, 24, 24),
-                      child: ListTile(
-                        contentPadding: EdgeInsets.all(16),
-                        title: Text(
-                          task['name'],
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        subtitle: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            SizedBox(height: 8),
-                            if (!(task['isUntimed'] ?? false)) ...[
-                              Text(
-                                'Date: ${_formatDate(task['date'])}',
-                                style: TextStyle(color: Colors.white70),
-                              ),
-                              Text(
-                                'Time: ${task['time']}',
-                                style: TextStyle(color: Colors.white70),
-                              ),
-                            ] else ...[
-                              Text(
+      body:
+          _tasks.isEmpty
+              ? Center(
+                child: Text(
+                  'No tasks available',
+                  style: TextStyle(color: Colors.white70, fontSize: 18),
+                ),
+              )
+              : ListView.builder(
+                itemCount: _tasks.length,
+                itemBuilder: (context, index) {
+                  final task = _tasks[index];
+                  return Card(
+                    color: Colors.grey[800],
+                    margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    child: ListTile(
+                      title: Text(
+                        task['name'],
+                        style: TextStyle(color: Colors.white),
+                      ),
+                      subtitle:
+                          task['isUntimed'] == true
+                              ? Text(
                                 'Untimed Task',
                                 style: TextStyle(color: Colors.white70),
+                              )
+                              : Text(
+                                '${_formatDate(task['date'])} ${task['time']}',
+                                style: TextStyle(color: Colors.white70),
                               ),
-                            ],
-                            Text(
-                              'Points: ${task['points']}',
-                              style: TextStyle(color: Colors.white70),
-                            ),
-                          ],
-                        ),
-                        trailing: TextButton.icon(
-                          onPressed: () {
-                            showDialog(
-                              context: context,
-                              builder: (BuildContext context) {
-                                return AlertDialog(
-                                  backgroundColor: Colors.grey[900],
-                                  title: Text(
-                                    'Delete Task',
-                                    style: TextStyle(color: Colors.white),
-                                  ),
-                                  content: RichText(
-                                    text: TextSpan(
-                                      style: TextStyle(color: Colors.white70),
-                                      children: [
-                                        TextSpan(
-                                          text:
-                                              'Are you sure you want to delete "',
-                                        ),
-                                        TextSpan(
-                                          text: '${task['name']}',
-                                          style: TextStyle(
-                                            color: Colors.blue,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-                                        TextSpan(text: '"?'),
-                                      ],
-                                    ),
-                                  ),
-                                  actions: [
-                                    TextButton(
-                                      child: Text(
-                                        'Cancel',
-                                        style: TextStyle(color: Colors.white70),
-                                      ),
-                                      onPressed: () {
-                                        Navigator.of(context).pop();
-                                      },
-                                    ),
-                                    TextButton(
-                                      child: Text(
-                                        'Delete',
-                                        style: TextStyle(color: Colors.red),
-                                      ),
-                                      onPressed: () {
-                                        Navigator.of(context).pop();
-                                        _deleteTask(index);
-                                      },
-                                    ),
-                                  ],
-                                );
-                              },
-                            );
-                          },
-                          icon: Icon(Icons.delete, color: Colors.red),
-                          label: Text(
-                            'Delete',
-                            style: TextStyle(color: Colors.red),
-                          ),
-                          style: TextButton.styleFrom(
-                            backgroundColor: Colors.red.withOpacity(0.1),
-                            padding: EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 8,
-                            ),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                          ),
-                        ),
+                      trailing: IconButton(
+                        icon: Icon(Icons.delete, color: Colors.red),
+                        onPressed: () => _deleteTask(index),
                       ),
-                    );
-                  },
-                ),
-      ),
+                    ),
+                  );
+                },
+              ),
     );
   }
 }

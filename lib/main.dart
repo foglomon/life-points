@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:life_points/home_page.dart';
+import 'package:life_points/service_locator.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await ServiceLocator.init();
   runApp(const MyApp());
 }
 
@@ -12,7 +15,10 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      title: 'Life Points',
       theme: ThemeData(
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
+        useMaterial3: true,
         appBarTheme: const AppBarTheme(
           iconTheme: IconThemeData(
             color: Colors.white,
