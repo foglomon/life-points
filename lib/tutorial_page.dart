@@ -185,7 +185,7 @@ class _TutorialPageState extends State<TutorialPage> {
                         child: Text(
                           _currentPage < _tutorialPages.length - 1
                               ? 'Next'
-                              : 'Get Started',
+                              : 'Continue',
                         ),
                       ),
                     ],

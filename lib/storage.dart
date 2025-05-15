@@ -48,4 +48,12 @@ class Storage {
       'points': ServiceLocator.prefs.getInt(_overduePointsKey) ?? 0,
     };
   }
+
+  static Future<void> clearAllData() async {
+    await ServiceLocator.prefs.remove(_usernameKey);
+    await ServiceLocator.prefs.remove(_pointsKey);
+    await ServiceLocator.prefs.remove(_tasksKey);
+    await ServiceLocator.prefs.remove(_overdueFrequencyKey);
+    await ServiceLocator.prefs.remove(_overduePointsKey);
+  }
 }

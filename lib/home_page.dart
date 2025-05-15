@@ -163,14 +163,44 @@ class _HomepageState extends State<Homepage> {
     final task = _tasks[index];
     if (task['completed'] == true) return;
 
+    bool isOverdue = false;
+    final isUntimed = task['isUntimed'] == true;
+    if (!isUntimed) {
+      try {
+        final taskDate = DateTime.parse(task['date']);
+        final timeParts = (task['time'] as String).split(':');
+        final taskDateTime = DateTime(
+          taskDate.year,
+          taskDate.month,
+          taskDate.day,
+          int.parse(timeParts[0]),
+          int.parse(timeParts[1]),
+        );
+        final now = DateTime.now();
+        isOverdue = taskDateTime.isBefore(now);
+      } catch (e) {
+        isOverdue = false;
+      }
+    }
+
     task['completed'] = true;
     await Storage.saveTasks(_tasks);
-    await _updatePoints(task['points'] as int);
+    if (!isOverdue) {
+      await _updatePoints(task['points'] as int);
+    }
 
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Task completed! +${task['points']} points')),
-    );
+    if (isOverdue && !isUntimed) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Task completed, but no points awarded (overdue)'),
+        ),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Task completed! +${task['points']} points')),
+      );
+    }
   }
 
   @override
@@ -201,159 +231,350 @@ class _HomepageState extends State<Homepage> {
           ),
         ],
       ),
-      body: Column(
-        children: [
-          Container(
-            padding: EdgeInsets.all(16),
-            color: Colors.grey[800],
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                GestureDetector(
-                  onTap: () async {
-                    final result = await Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => EditInfo(currentName: _username),
-                      ),
-                    );
-                    if (result != null) {
-                      await Storage.saveUsername(result);
-                      setState(() {
-                        _username = result;
-                      });
-                    }
-                  },
-                  child: Text(
-                    _username,
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                    ),
+      body: RefreshIndicator(
+        onRefresh: _loadTasks,
+        color: Colors.blue,
+        backgroundColor: Colors.grey[900],
+        child: Column(
+          children: [
+            // Redesigned user info container
+            GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: () async {
+                final result = await Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => EditInfo(currentName: _username),
                   ),
-                ),
-                Text(
-                  '$_points points',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
+                );
+                if (result != null) {
+                  await Storage.saveUsername(result);
+                  setState(() {
+                    _username = result;
+                  });
+                }
+              },
+              child: Container(
+                margin: EdgeInsets.all(16),
+                padding: EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(20),
+                  gradient: LinearGradient(
+                    colors: [
+                      Colors.blueGrey.shade800,
+                      Colors.blueGrey.shade600,
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
                   ),
-                ),
-              ],
-            ),
-          ),
-          Expanded(
-            child: ListView.builder(
-              itemCount: _tasks.length,
-              itemBuilder: (context, index) {
-                final task = _tasks[index];
-                final isCompleted = task['completed'] == true;
-                final isUntimed = task['isUntimed'] == true;
-
-                // Determine if the task is overdue
-                bool isOverdue = false;
-                Duration? timeRemaining;
-                if (!isUntimed && !isCompleted) {
-                  try {
-                    final taskDate = DateTime.parse(task['date']);
-                    final timeParts = (task['time'] as String).split(':');
-                    final taskDateTime = DateTime(
-                      taskDate.year,
-                      taskDate.month,
-                      taskDate.day,
-                      int.parse(timeParts[0]),
-                      int.parse(timeParts[1]),
-                    );
-                    final now = DateTime.now();
-                    isOverdue = taskDateTime.isBefore(now);
-                    if (!isOverdue) {
-                      timeRemaining = taskDateTime.difference(now);
-                    }
-                  } catch (e) {
-                    isOverdue = false;
-                  }
-                }
-
-                String? subtitleText;
-                if (!isUntimed) {
-                  final dateStr = task['date'].split('T')[0];
-                  final timeStr = task['time'];
-                  if (isOverdue) {
-                    subtitleText = '$dateStr $timeStr   •   Overdue';
-                  } else if (timeRemaining != null) {
-                    String remaining;
-                    if (timeRemaining.inDays > 0) {
-                      remaining =
-                          '${timeRemaining.inDays}d ${timeRemaining.inHours % 24}h remaining';
-                    } else if (timeRemaining.inHours > 0) {
-                      remaining =
-                          '${timeRemaining.inHours}h ${timeRemaining.inMinutes % 60}m remaining';
-                    } else if (timeRemaining.inMinutes > 0) {
-                      remaining = '${timeRemaining.inMinutes}m remaining';
-                    } else {
-                      remaining = 'Less than a minute remaining';
-                    }
-                    subtitleText = '$dateStr $timeStr   •   $remaining';
-                  } else {
-                    subtitleText = '$dateStr $timeStr';
-                  }
-                }
-
-                return Card(
-                  color: isOverdue ? Colors.red[900] : Colors.grey[800],
-                  margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  child: ListTile(
-                    title: Text(
-                      task['name'],
-                      style: TextStyle(
-                        color: Colors.white,
-                        decoration:
-                            isCompleted ? TextDecoration.lineThrough : null,
-                      ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.2),
+                      blurRadius: 8,
+                      offset: Offset(0, 4),
                     ),
-                    subtitle:
-                        isUntimed
-                            ? null
-                            : Text(
-                              subtitleText!,
-                              style: TextStyle(
-                                color:
-                                    isOverdue
-                                        ? Colors.redAccent
-                                        : Colors.white70,
-                                fontWeight: isOverdue ? FontWeight.bold : null,
-                              ),
-                            ),
-                    trailing: Row(
-                      mainAxisSize: MainAxisSize.min,
+                  ],
+                ),
+                child: Row(
+                  children: [
+                    Row(
                       children: [
+                        CircleAvatar(
+                          backgroundColor: Colors.blueAccent,
+                          child: Icon(Icons.person, color: Colors.white),
+                        ),
+                        SizedBox(width: 12),
                         Text(
-                          '+${task['points']}',
+                          _username,
                           style: TextStyle(
-                            color: Colors.green,
+                            color: Colors.white,
+                            fontSize: 22,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-                        SizedBox(width: 8),
-                        IconButton(
-                          icon: Icon(
-                            isCompleted
-                                ? Icons.check_circle
-                                : Icons.circle_outlined,
-                            color: isCompleted ? Colors.green : Colors.white,
-                          ),
-                          onPressed: () => _completeTask(index),
-                        ),
                       ],
                     ),
-                  ),
-                );
-              },
+                    Spacer(),
+                    Container(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 8,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withValues(alpha: 0.3),
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(Icons.stars, color: Colors.amber, size: 24),
+                          SizedBox(width: 6),
+                          Text(
+                            '$_points',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 22,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          SizedBox(width: 4),
+                          Text(
+                            'points',
+                            style: TextStyle(
+                              color: Colors.white70,
+                              fontSize: 14,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ),
-          ),
-        ],
+            Expanded(
+              child: Builder(
+                builder: (context) {
+                  final availableTasks =
+                      _tasks
+                          .where((task) => task['completed'] != true)
+                          .toList();
+                  final completedTasks =
+                      _tasks
+                          .where((task) => task['completed'] == true)
+                          .toList();
+                  return ListView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    children: [
+                      // Available tasks section title
+                      Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 24,
+                          vertical: 12,
+                        ),
+                        child: Text(
+                          'Available Tasks (${availableTasks.length})',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                      // Available tasks or no tasks message
+                      if (availableTasks.isEmpty)
+                        Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 24,
+                            vertical: 16,
+                          ),
+                          child: Text(
+                            'No Available Tasks',
+                            style: TextStyle(
+                              color: Colors.white54,
+                              fontSize: 16,
+                              fontStyle: FontStyle.italic,
+                            ),
+                          ),
+                        )
+                      else
+                        ...availableTasks.map((task) {
+                          final index = _tasks.indexOf(task);
+                          final isCompleted = task['completed'] == true;
+                          final isUntimed = task['isUntimed'] == true;
+
+                          // Determine if the task is overdue
+                          bool isOverdue = false;
+                          Duration? timeRemaining;
+                          if (!isUntimed && !isCompleted) {
+                            try {
+                              final taskDate = DateTime.parse(task['date']);
+                              final timeParts = (task['time'] as String).split(
+                                ':',
+                              );
+                              final taskDateTime = DateTime(
+                                taskDate.year,
+                                taskDate.month,
+                                taskDate.day,
+                                int.parse(timeParts[0]),
+                                int.parse(timeParts[1]),
+                              );
+                              final now = DateTime.now();
+                              isOverdue = taskDateTime.isBefore(now);
+                              if (!isOverdue) {
+                                timeRemaining = taskDateTime.difference(now);
+                              }
+                            } catch (e) {
+                              isOverdue = false;
+                            }
+                          }
+
+                          String? subtitleText;
+                          if (!isUntimed) {
+                            final dateStr = task['date'].split('T')[0];
+                            final timeStr = task['time'];
+                            if (isOverdue) {
+                              subtitleText = '$dateStr $timeStr   •   Overdue';
+                            } else if (timeRemaining != null) {
+                              String remaining;
+                              if (timeRemaining.inDays > 0) {
+                                remaining =
+                                    '${timeRemaining.inDays}d ${timeRemaining.inHours % 24}h remaining';
+                              } else if (timeRemaining.inHours > 0) {
+                                remaining =
+                                    '${timeRemaining.inHours}h ${timeRemaining.inMinutes % 60}m remaining';
+                              } else if (timeRemaining.inMinutes > 0) {
+                                remaining =
+                                    '${timeRemaining.inMinutes}m remaining';
+                              } else {
+                                remaining = 'Less than a minute remaining';
+                              }
+                              subtitleText =
+                                  '$dateStr $timeStr   •   $remaining';
+                            } else {
+                              subtitleText = '$dateStr $timeStr';
+                            }
+                          }
+
+                          return Card(
+                            color:
+                                isOverdue ? Colors.red[900] : Colors.grey[800],
+                            margin: EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 8,
+                            ),
+                            child: ListTile(
+                              title: Text(
+                                task['name'],
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  decoration:
+                                      isCompleted
+                                          ? TextDecoration.lineThrough
+                                          : null,
+                                ),
+                              ),
+                              subtitle:
+                                  isUntimed
+                                      ? null
+                                      : Text(
+                                        subtitleText!,
+                                        style: TextStyle(
+                                          color:
+                                              isOverdue
+                                                  ? Colors.redAccent
+                                                  : Colors.white70,
+                                          fontWeight:
+                                              isOverdue
+                                                  ? FontWeight.bold
+                                                  : null,
+                                        ),
+                                      ),
+                              trailing: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text(
+                                    '+${task['points']}',
+                                    style: TextStyle(
+                                      color: Colors.green,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  SizedBox(width: 8),
+                                  IconButton(
+                                    icon: Icon(
+                                      isCompleted
+                                          ? Icons.check_circle
+                                          : Icons.circle_outlined,
+                                      color:
+                                          isCompleted
+                                              ? Colors.green
+                                              : Colors.white,
+                                    ),
+                                    onPressed: () => _completeTask(index),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        }),
+                      // Completed tasks section (collapsible)
+                      if (completedTasks.isNotEmpty)
+                        Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 8,
+                          ),
+                          child: Theme(
+                            data: Theme.of(context).copyWith(
+                              dividerColor: Colors.transparent,
+                              unselectedWidgetColor: Colors.white70,
+                              colorScheme: Theme.of(
+                                context,
+                              ).colorScheme.copyWith(surface: Colors.grey[900]),
+                            ),
+                            child: ExpansionTile(
+                              initiallyExpanded: true,
+                              backgroundColor: Colors.grey[900],
+                              collapsedBackgroundColor: Colors.grey[900],
+                              title: Text(
+                                'Completed Tasks (${completedTasks.length})',
+                                style: TextStyle(
+                                  color: Colors.white70,
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              children:
+                                  completedTasks.map((task) {
+                                    final isUntimed = task['isUntimed'] == true;
+                                    String? subtitleText;
+                                    if (!isUntimed) {
+                                      final dateStr =
+                                          task['date'].split('T')[0];
+                                      final timeStr = task['time'];
+                                      subtitleText = '$dateStr $timeStr';
+                                    }
+                                    return Card(
+                                      color: Colors.grey[850],
+                                      margin: EdgeInsets.symmetric(
+                                        horizontal: 16,
+                                        vertical: 8,
+                                      ),
+                                      child: ListTile(
+                                        title: Text(
+                                          task['name'],
+                                          style: TextStyle(
+                                            color: Colors.white54,
+                                            decoration:
+                                                TextDecoration.lineThrough,
+                                          ),
+                                        ),
+                                        subtitle:
+                                            isUntimed
+                                                ? null
+                                                : Text(
+                                                  subtitleText!,
+                                                  style: TextStyle(
+                                                    color: Colors.white38,
+                                                  ),
+                                                ),
+                                        trailing: Icon(
+                                          Icons.check_circle,
+                                          color: Colors.green,
+                                        ),
+                                      ),
+                                    );
+                                  }).toList(),
+                            ),
+                          ),
+                        ),
+                    ],
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
       ),
       floatingActionButton: Tooltip(
         message: 'Add new task',

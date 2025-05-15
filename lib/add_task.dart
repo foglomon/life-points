@@ -159,105 +159,107 @@ class _AddTaskState extends State<AddTask> {
       ),
       body: Container(
         padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            TextField(
-              controller: _taskNameController,
-              style: TextStyle(color: Colors.white),
-              decoration: InputDecoration(
-                labelText: 'Task Name',
-                labelStyle: TextStyle(color: Colors.white70),
-                enabledBorder: OutlineInputBorder(
-                  borderSide: BorderSide(color: Colors.grey[600]!),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderSide: BorderSide(color: Colors.blue),
-                ),
-              ),
-            ),
-            SizedBox(height: 16),
-            TextField(
-              controller: _pointsController,
-              keyboardType: TextInputType.number,
-              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-              style: TextStyle(color: Colors.white),
-              decoration: InputDecoration(
-                labelText: 'Points',
-                labelStyle: TextStyle(color: Colors.white70),
-                enabledBorder: OutlineInputBorder(
-                  borderSide: BorderSide(color: Colors.grey[600]!),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderSide: BorderSide(color: Colors.blue),
-                ),
-              ),
-            ),
-            SizedBox(height: 16),
-            SwitchListTile(
-              title: Text(
-                'Untimed Task',
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              TextField(
+                controller: _taskNameController,
                 style: TextStyle(color: Colors.white),
+                decoration: InputDecoration(
+                  labelText: 'Task Name',
+                  labelStyle: TextStyle(color: Colors.white70),
+                  enabledBorder: OutlineInputBorder(
+                    borderSide: BorderSide(color: Colors.grey[600]!),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderSide: BorderSide(color: Colors.blue),
+                  ),
+                ),
               ),
-              value: isUntimed,
-              onChanged: (bool value) {
-                setState(() {
-                  isUntimed = value;
-                });
-              },
-              activeColor: Colors.blue,
-            ),
-            if (!isUntimed) ...[
               SizedBox(height: 16),
-              Row(
-                children: [
-                  Expanded(
-                    child: ElevatedButton.icon(
-                      onPressed: () => _selectDate(context),
-                      icon: Icon(Icons.calendar_today),
-                      label: Text(
-                        selectedDate == null
-                            ? 'Select Date'
-                            : '${selectedDate!.day}/${selectedDate!.month}/${selectedDate!.year}',
-                      ),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.grey[800],
-                        foregroundColor: Colors.white,
-                        padding: EdgeInsets.symmetric(vertical: 16),
+              TextField(
+                controller: _pointsController,
+                keyboardType: TextInputType.number,
+                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                style: TextStyle(color: Colors.white),
+                decoration: InputDecoration(
+                  labelText: 'Points',
+                  labelStyle: TextStyle(color: Colors.white70),
+                  enabledBorder: OutlineInputBorder(
+                    borderSide: BorderSide(color: Colors.grey[600]!),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderSide: BorderSide(color: Colors.blue),
+                  ),
+                ),
+              ),
+              SizedBox(height: 16),
+              SwitchListTile(
+                title: Text(
+                  'Untimed Task',
+                  style: TextStyle(color: Colors.white),
+                ),
+                value: isUntimed,
+                onChanged: (bool value) {
+                  setState(() {
+                    isUntimed = value;
+                  });
+                },
+                activeColor: Colors.blue,
+              ),
+              if (!isUntimed) ...[
+                SizedBox(height: 16),
+                Row(
+                  children: [
+                    Expanded(
+                      child: ElevatedButton.icon(
+                        onPressed: () => _selectDate(context),
+                        icon: Icon(Icons.calendar_today),
+                        label: Text(
+                          selectedDate == null
+                              ? 'Select Date'
+                              : '${selectedDate!.day}/${selectedDate!.month}/${selectedDate!.year}',
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.grey[800],
+                          foregroundColor: Colors.white,
+                          padding: EdgeInsets.symmetric(vertical: 16),
+                        ),
                       ),
                     ),
-                  ),
-                  SizedBox(width: 16),
-                  Expanded(
-                    child: ElevatedButton.icon(
-                      onPressed: () => _selectTime(context),
-                      icon: Icon(Icons.access_time),
-                      label: Text(
-                        selectedTime == null
-                            ? 'Select Time'
-                            : '${selectedTime!.hour}:${selectedTime!.minute.toString().padLeft(2, '0')}',
-                      ),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.grey[800],
-                        foregroundColor: Colors.white,
-                        padding: EdgeInsets.symmetric(vertical: 16),
+                    SizedBox(width: 16),
+                    Expanded(
+                      child: ElevatedButton.icon(
+                        onPressed: () => _selectTime(context),
+                        icon: Icon(Icons.access_time),
+                        label: Text(
+                          selectedTime == null
+                              ? 'Select Time'
+                              : '${selectedTime!.hour}:${selectedTime!.minute.toString().padLeft(2, '0')}',
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.grey[800],
+                          foregroundColor: Colors.white,
+                          padding: EdgeInsets.symmetric(vertical: 16),
+                        ),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
+              ],
+              SizedBox(height: 32),
+              ElevatedButton(
+                onPressed: _saveTask,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.blue,
+                  foregroundColor: Colors.white,
+                  minimumSize: Size(double.infinity, 50),
+                ),
+                child: Text('Save Task'),
               ),
             ],
-            SizedBox(height: 32),
-            ElevatedButton(
-              onPressed: _saveTask,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.blue,
-                foregroundColor: Colors.white,
-                minimumSize: Size(double.infinity, 50),
-              ),
-              child: Text('Save Task'),
-            ),
-          ],
+          ),
         ),
       ),
     );
