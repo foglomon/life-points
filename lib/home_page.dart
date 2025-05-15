@@ -185,6 +185,7 @@ class _HomepageState extends State<Homepage> {
 
     task['completed'] = true;
     await Storage.saveTasks(_tasks);
+    setState(() {});
     if (!isOverdue) {
       await _updatePoints(task['points'] as int);
     }
