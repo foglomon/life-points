@@ -7,7 +7,7 @@ A powerful offline task tracking application for Android that helps you manage y
 - **Offline-First**: Works completely offline, ensuring your tasks are always accessible
 - **Task Management**: Create, edit, and delete tasks with ease
 - **Points System**: Earn points for completing tasks, adding a gamification element to productivity
-- **Task Completion Tracking**: Mark tasks as complete and track your progress
+- **Tas\*\***k Completion Tracking\*\*: Mark tasks as complete and track your progress
 - **User Authentication**: Secure access to your tasks
 - **Settings Customization**: Personalize your experience
 - **Tutorial System**: Easy onboarding for new users
@@ -15,14 +15,20 @@ A powerful offline task tracking application for Android that helps you manage y
 
 ## Getting Started
 
-### Prerequisites
+### Installation on Live Device
+
+Will update soon
+
+### Building Locally
+
+#### Prerequisites
 
 - Flutter SDK (^3.7.2)
 - Dart SDK
 - Android Studio / VS Code
 - Git
 
-### Installation
+#### Installation
 
 1. Clone the repository:
 
