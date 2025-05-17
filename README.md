@@ -1,5 +1,5 @@
 # Life Points
-
+![Life Points Banner](https://github.com/foglomon/life_points/blob/main/readme_image/image.png?raw=true)
 A powerful offline task tracking application for Android that helps you manage your daily tasks and stay organized. Life Points gamifies your productivity by rewarding you with points for completing tasks, making task management more engaging and motivating.
 
 ## Features
