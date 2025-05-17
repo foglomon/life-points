@@ -269,6 +269,7 @@ class _SettingsState extends State<Settings> {
                       await Storage.clearAllData();
                       if (!mounted) return;
                       Navigator.pushNamedAndRemoveUntil(
+                        // ignore: use_build_context_synchronously
                         context,
                         '/',
                         (route) => false,
