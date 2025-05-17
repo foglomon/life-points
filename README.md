@@ -7,7 +7,7 @@ A powerful offline task tracking application for Android that helps you manage y
 - **Offline-First**: Works completely offline, ensuring your tasks are always accessible
 - **Task Management**: Create, edit, and delete tasks with ease
 - **Points System**: Earn points for completing tasks, adding a gamification element to productivity
-- **Tas\*\***k Completion Tracking\*\*: Mark tasks as complete and track your progress
+- **Task Completion Tracking**: Mark tasks as complete and track your progress
 - **User Authentication**: Secure access to your tasks
 - **Settings Customization**: Personalize your experience
 - **Tutorial System**: Easy onboarding for new users
