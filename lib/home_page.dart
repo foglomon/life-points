@@ -18,6 +18,26 @@ class _HomepageState extends State<Homepage> {
   int _points = 0;
   List<Map<String, dynamic>> _tasks = [];
   final OverdueService _overdueService = OverdueService();
+  int _selectedIndex = 0;
+
+  void _onItemTapped(int index) {
+    if (index == 1) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => AddTask()),
+      ).then((_) {
+        _loadTasks();
+      });
+    } else if (index == 2) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => Settings()),
+      ).then((_) {
+        _loadTasks();
+        _loadUserData();
+      });
+    }
+  }
 
   @override
   void initState() {
@@ -208,6 +228,7 @@ class _HomepageState extends State<Homepage> {
     return Scaffold(
       backgroundColor: Colors.grey[900],
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         title: Text(
           'Life Points',
           style: TextStyle(
@@ -218,18 +239,6 @@ class _HomepageState extends State<Homepage> {
           ),
         ),
         backgroundColor: Colors.grey[900],
-        actions: [
-          IconButton(
-            icon: Icon(Icons.settings, color: Colors.white),
-            onPressed: () async {
-              await Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => Settings()),
-              );
-              _loadTasks(); // Reload tasks after returning from settings
-            },
-          ),
-        ],
       ),
       body: RefreshIndicator(
         onRefresh: _loadTasks,
@@ -237,95 +246,72 @@ class _HomepageState extends State<Homepage> {
         backgroundColor: Colors.grey[900],
         child: Column(
           children: [
-            // Redesigned user info container
-            GestureDetector(
-              behavior: HitTestBehavior.opaque,
-              onTap: () async {
-                await Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => Settings()),
-                );
-                // Reload user data after returning from settings
-                final username = await Storage.getUsername();
-                setState(() {
-                  _username = username ?? "User";
-                });
-              },
-              child: Container(
-                margin: EdgeInsets.all(16),
-                padding: EdgeInsets.symmetric(horizontal: 20, vertical: 18),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(20),
-                  gradient: LinearGradient(
-                    colors: [
-                      Colors.blueGrey.shade800,
-                      Colors.blueGrey.shade600,
-                    ],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.2),
-                      blurRadius: 8,
-                      offset: Offset(0, 4),
-                    ),
-                  ],
+            // User info container
+            Container(
+              margin: EdgeInsets.all(16),
+              padding: EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(20),
+                gradient: LinearGradient(
+                  colors: [Colors.blueGrey.shade800, Colors.blueGrey.shade600],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
                 ),
-                child: Row(
-                  children: [
-                    Row(
-                      children: [
-                        CircleAvatar(
-                          backgroundColor: Colors.blueAccent,
-                          child: Icon(Icons.person, color: Colors.white),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withAlpha(50),
+                    blurRadius: 8,
+                    offset: Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: Row(
+                children: [
+                  Row(
+                    children: [
+                      CircleAvatar(
+                        backgroundColor: Colors.blueAccent,
+                        child: Icon(Icons.person, color: Colors.white),
+                      ),
+                      SizedBox(width: 12),
+                      Text(
+                        _username,
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
                         ),
-                        SizedBox(width: 12),
+                      ),
+                    ],
+                  ),
+                  Spacer(),
+                  Container(
+                    padding: EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withAlpha(50),
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(Icons.stars, color: Colors.amber, size: 24),
+                        SizedBox(width: 6),
                         Text(
-                          _username,
+                          '$_points',
                           style: TextStyle(
                             color: Colors.white,
                             fontSize: 22,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
+                        SizedBox(width: 4),
+                        Text(
+                          'points',
+                          style: TextStyle(color: Colors.white70, fontSize: 14),
+                        ),
                       ],
                     ),
-                    Spacer(),
-                    Container(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: 14,
-                        vertical: 8,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.black.withValues(alpha: 0.3),
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: Row(
-                        children: [
-                          Icon(Icons.stars, color: Colors.amber, size: 24),
-                          SizedBox(width: 6),
-                          Text(
-                            '$_points',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 22,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          SizedBox(width: 4),
-                          Text(
-                            'points',
-                            style: TextStyle(
-                              color: Colors.white70,
-                              fontSize: 14,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
             Expanded(
@@ -589,6 +575,21 @@ class _HomepageState extends State<Homepage> {
           icon: Icon(Icons.add),
           label: Text('Add Task'),
         ),
+      ),
+      bottomNavigationBar: BottomNavigationBar(
+        backgroundColor: Colors.grey[850],
+        selectedItemColor: Colors.blue,
+        unselectedItemColor: Colors.grey,
+        items: const <BottomNavigationBarItem>[
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
+          BottomNavigationBarItem(icon: Icon(Icons.add), label: 'Add Task'),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.settings),
+            label: 'Settings',
+          ),
+        ],
+        currentIndex: _selectedIndex,
+        onTap: _onItemTapped,
       ),
     );
   }

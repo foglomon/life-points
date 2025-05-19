@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:life_points/delete_task.dart';
 import 'package:life_points/storage.dart';
+import 'package:life_points/home_page.dart';
+import 'package:life_points/add_task.dart';
 
 class Settings extends StatefulWidget {
   const Settings({super.key});
@@ -10,9 +12,24 @@ class Settings extends StatefulWidget {
 }
 
 class _SettingsState extends State<Settings> {
+  int _selectedIndex = 2;
   String selectedFrequency = 'Every Day';
   final TextEditingController pointsController = TextEditingController();
   final TextEditingController nameController = TextEditingController();
+
+  void _onItemTapped(int index) {
+    if (index == 0) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => Homepage()),
+      );
+    } else if (index == 1) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => AddTask()),
+      );
+    }
+  }
 
   @override
   void initState() {
@@ -92,6 +109,7 @@ class _SettingsState extends State<Settings> {
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800),
         ),
         backgroundColor: Colors.grey[900],
+        automaticallyImplyLeading: false,
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(1),
           child: Container(color: Colors.black, height: 1.5),
@@ -355,6 +373,21 @@ class _SettingsState extends State<Settings> {
             ],
           ),
         ),
+      ),
+      bottomNavigationBar: BottomNavigationBar(
+        backgroundColor: Colors.grey[850],
+        selectedItemColor: Colors.blue,
+        unselectedItemColor: Colors.grey,
+        items: const <BottomNavigationBarItem>[
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
+          BottomNavigationBarItem(icon: Icon(Icons.add), label: 'Add Task'),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.settings),
+            label: 'Settings',
+          ),
+        ],
+        currentIndex: _selectedIndex,
+        onTap: _onItemTapped,
       ),
     );
   }

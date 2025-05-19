@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:life_points/storage.dart';
+import 'package:life_points/home_page.dart';
+import 'package:life_points/settings.dart';
 
 class AddTask extends StatefulWidget {
   const AddTask({super.key});
@@ -10,11 +12,26 @@ class AddTask extends StatefulWidget {
 }
 
 class _AddTaskState extends State<AddTask> {
+  int _selectedIndex = 1;
   DateTime? selectedDate;
   TimeOfDay? selectedTime;
   bool isUntimed = false;
   final TextEditingController _taskNameController = TextEditingController();
   final TextEditingController _pointsController = TextEditingController();
+
+  void _onItemTapped(int index) {
+    if (index == 0) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => Homepage()),
+      );
+    } else if (index == 2) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => Settings()),
+      );
+    }
+  }
 
   @override
   void dispose() {
@@ -152,6 +169,7 @@ class _AddTaskState extends State<AddTask> {
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800),
         ),
         backgroundColor: Colors.grey[900],
+        automaticallyImplyLeading: false,
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(1),
           child: Container(color: Colors.black, height: 1.5),
@@ -261,6 +279,21 @@ class _AddTaskState extends State<AddTask> {
             ],
           ),
         ),
+      ),
+      bottomNavigationBar: BottomNavigationBar(
+        backgroundColor: Colors.grey[850],
+        selectedItemColor: Colors.blue,
+        unselectedItemColor: Colors.grey,
+        items: const <BottomNavigationBarItem>[
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
+          BottomNavigationBarItem(icon: Icon(Icons.add), label: 'Add Task'),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.settings),
+            label: 'Settings',
+          ),
+        ],
+        currentIndex: _selectedIndex,
+        onTap: _onItemTapped,
       ),
     );
   }
