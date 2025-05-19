@@ -1,4 +1,4 @@
-package com.example.life_points
+package com.foglomon.life_points
 
 import io.flutter.embedding.android.FlutterActivity
 
