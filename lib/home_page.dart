@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:life_points/add_task.dart';
-import 'package:life_points/edit_info.dart';
 import 'package:life_points/settings.dart';
 import 'package:life_points/storage.dart';
 import 'package:life_points/overdue_service.dart';
@@ -242,18 +241,15 @@ class _HomepageState extends State<Homepage> {
             GestureDetector(
               behavior: HitTestBehavior.opaque,
               onTap: () async {
-                final result = await Navigator.push(
+                await Navigator.push(
                   context,
-                  MaterialPageRoute(
-                    builder: (context) => EditInfo(currentName: _username),
-                  ),
+                  MaterialPageRoute(builder: (context) => Settings()),
                 );
-                if (result != null) {
-                  await Storage.saveUsername(result);
-                  setState(() {
-                    _username = result;
-                  });
-                }
+                // Reload user data after returning from settings
+                final username = await Storage.getUsername();
+                setState(() {
+                  _username = username ?? "User";
+                });
               },
               child: Container(
                 margin: EdgeInsets.all(16),

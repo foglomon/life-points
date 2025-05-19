@@ -12,16 +12,19 @@ class Settings extends StatefulWidget {
 class _SettingsState extends State<Settings> {
   String selectedFrequency = 'Every Day';
   final TextEditingController pointsController = TextEditingController();
+  final TextEditingController nameController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
     _loadOverdueSettings();
+    _loadProfile();
   }
 
   @override
   void dispose() {
     pointsController.dispose();
+    nameController.dispose();
     super.dispose();
   }
 
@@ -56,6 +59,29 @@ class _SettingsState extends State<Settings> {
     );
   }
 
+  Future<void> _loadProfile() async {
+    final username = await Storage.getUsername();
+    setState(() {
+      nameController.text = username ?? "";
+    });
+  }
+
+  Future<void> _saveProfile() async {
+    String name = nameController.text;
+    if (name.isNotEmpty) {
+      await Storage.saveUsername(name);
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Name saved successfully!')));
+    } else {
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Please enter a name.')));
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -77,6 +103,54 @@ class _SettingsState extends State<Settings> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              Text(
+                'Profile',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              SizedBox(height: 20),
+              Container(
+                padding: EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.grey[900],
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    TextField(
+                      controller: nameController,
+                      style: TextStyle(color: Colors.white),
+                      decoration: InputDecoration(
+                        labelText: 'Name',
+                        labelStyle: TextStyle(color: Colors.white70),
+                        enabledBorder: OutlineInputBorder(
+                          borderSide: BorderSide(color: Colors.grey[600]!),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderSide: BorderSide(color: Colors.blue),
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: 16),
+                    ElevatedButton(
+                      onPressed: _saveProfile,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.blue,
+                        foregroundColor: Colors.white,
+                        minimumSize: Size(double.infinity, 50),
+                      ),
+                      child: Text('Save Profile'),
+                    ),
+                  ],
+                ),
+              ),
+              SizedBox(height: 32),
+              Divider(color: Colors.white24),
+              SizedBox(height: 16),
               Column(
                 children: [
                   Text(
