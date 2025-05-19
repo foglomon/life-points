@@ -19,19 +19,26 @@ class _HomepageState extends State<Homepage> {
   List<Map<String, dynamic>> _tasks = [];
   final OverdueService _overdueService = OverdueService();
   int _selectedIndex = 0;
-
   void _onItemTapped(int index) {
     if (index == 1) {
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) => AddTask()),
+        PageRouteBuilder(
+          pageBuilder: (context, animation, secondaryAnimation) => AddTask(),
+          transitionDuration: Duration.zero,
+          reverseTransitionDuration: Duration.zero,
+        ),
       ).then((_) {
         _loadTasks();
       });
     } else if (index == 2) {
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) => Settings()),
+        PageRouteBuilder(
+          pageBuilder: (context, animation, secondaryAnimation) => Settings(),
+          transitionDuration: Duration.zero,
+          reverseTransitionDuration: Duration.zero,
+        ),
       ).then((_) {
         _loadTasks();
         _loadUserData();

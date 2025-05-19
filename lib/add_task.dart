@@ -12,23 +12,30 @@ class AddTask extends StatefulWidget {
 }
 
 class _AddTaskState extends State<AddTask> {
-  int _selectedIndex = 1;
+  final _selectedIndex = 1;
   DateTime? selectedDate;
   TimeOfDay? selectedTime;
   bool isUntimed = false;
   final TextEditingController _taskNameController = TextEditingController();
   final TextEditingController _pointsController = TextEditingController();
-
   void _onItemTapped(int index) {
     if (index == 0) {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => Homepage()),
+        PageRouteBuilder(
+          pageBuilder: (context, animation, secondaryAnimation) => Homepage(),
+          transitionDuration: Duration.zero,
+          reverseTransitionDuration: Duration.zero,
+        ),
       );
     } else if (index == 2) {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => Settings()),
+        PageRouteBuilder(
+          pageBuilder: (context, animation, secondaryAnimation) => Settings(),
+          transitionDuration: Duration.zero,
+          reverseTransitionDuration: Duration.zero,
+        ),
       );
     }
   }

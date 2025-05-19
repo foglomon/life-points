@@ -16,17 +16,24 @@ class _SettingsState extends State<Settings> {
   String selectedFrequency = 'Every Day';
   final TextEditingController pointsController = TextEditingController();
   final TextEditingController nameController = TextEditingController();
-
   void _onItemTapped(int index) {
     if (index == 0) {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => Homepage()),
+        PageRouteBuilder(
+          pageBuilder: (context, animation, secondaryAnimation) => Homepage(),
+          transitionDuration: Duration.zero,
+          reverseTransitionDuration: Duration.zero,
+        ),
       );
     } else if (index == 1) {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => AddTask()),
+        PageRouteBuilder(
+          pageBuilder: (context, animation, secondaryAnimation) => AddTask(),
+          transitionDuration: Duration.zero,
+          reverseTransitionDuration: Duration.zero,
+        ),
       );
     }
   }
