@@ -18,7 +18,9 @@ A powerful offline task tracking application for Android that helps you manage y
 
 ### Installation on Live Device
 
-Will update soon
+ - Download the APK from the [releases](https://github.com/foglomon/life-points/releases/latest) tab.
+ - Open the APK on your android device and Press Install. (Press trust if the installer shows a warning.)
+ - The app will be installed on the home page. Click on the Life Points Icon to run the app from your home screen!
 
 ### Building Locally
 
